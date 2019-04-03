@@ -28,7 +28,7 @@ namespace CocosAPIMaker
             var path = fbw.SelectedPath.Trim();
             Log.Text = "当前选择路径:" + path + "\n";
             //this.SearchAllFile(path);
-            this.TransAsync("C:/Users/Tooya/Desktop/api/AbstractCheckButton.lua");
+            _ = this.TransAsync("C:/Users/Tooya/source/repos/TooyaSakiTama/CocosAPIMaker/CocosAPIMaker/test/api/AbstractCheckButton.lua");
         }
         private void SearchAllFile(string path)
         {
