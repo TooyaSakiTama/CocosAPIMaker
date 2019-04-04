@@ -32,15 +32,15 @@ namespace CocosAPIMaker
         }
 
         public static string[] splitKey = { "--------------------------------" };
-        public static string[] classKey = { "@module" };
-        public static string[] inheritedClassKey = { "@extend" };
-        public static string[] parentClassKey = { "@parent_module" };
-        public static string[] functionKey = { "@function" };
-        public static string[] functionDocKey = { "--" };
-        public static string[] paramKey = { "@param" };
-        public static string[] paramDocKey = { "param" };
-        public static string[] returnKey = { "@return" };
-        public static string[] returnDocKey = { "return" };
+        public static string classKey = "@module";
+        public static string inheritedClassKey = "@extend";
+        public static string parentClassKey = "@parent_module";
+        public static string functionKey = "@function";
+        public static string functionDocKey = "functionDoc";
+        public static string paramKey = "@param";
+        public static string paramDocKey = "param";
+        public static string returnKey = "@return";
+        public static string returnDocKey = "return";
         public static string[] enterKey = { "\n" };
         public static string[] spaseKey = { " " };
         public static string[] ignoreKeys = { "self" };
@@ -51,7 +51,6 @@ namespace CocosAPIMaker
         /// <param name="luaStr"></param>
         public void TransStrat(string luaStr)
         {
-
             string[] docs = SplitAllDoc(luaStr);
             _classStruct = new ClassStruct();
             foreach (var item in docs)
@@ -71,73 +70,88 @@ namespace CocosAPIMaker
             string[] temp = luaStr.Split(splitKey, StringSplitOptions.None);
             for (int i = 0; i < temp.Length; i++)
             {
-
                 temp[i] = temp[i].Replace("\r", " ");
                 temp[i] = temp[i].Replace("\n", " ");
             }
 
             return temp;
         }
+        private int DismantlingData(int index, string[] data, Dictionary<string, string> itemDictionary)
+        {
+            index = index + 1;
+            string stringTemp = "";
+            int j;
+            for (j = index + 1; j < data.Length; j++)
+            {
+                if (data[j].Contains("--"))
+                {
+                    break;
+                }
+                else
+                {
+                    stringTemp += data[j] + " ";
+                }
+            }
+            stringTemp = stringTemp.Trim(' ');
+            itemDictionary.Add(stringTemp, data[index]);
+            index = j - 1;
+            return index;
+        }
         /// <summary>
         /// 解析一条注释
         /// </summary>
         /// <param name="_ClassStruct"></param>
         /// <param name="doc"></param>
-        public void AnalyticalDoc(string doc)
+        public void AnalyticalDoc(string item)
         {
-            string[] temp = doc.Split(Trans.enterKey, StringSplitOptions.None);
-            foreach (var item in temp)
+            string[] itemTemp = item.Split(spaseKey, StringSplitOptions.None);
+            Dictionary<string, string> itemDictionary = new Dictionary<string, string>();
+            for (int index = 0; index < itemTemp.Length; index++)
             {
-                string[] itemTemp = item.Split(spaseKey, StringSplitOptions.None);
-                Dictionary<string, string> itemDictionary = new Dictionary<string, string>();
-                for (int i = 0; i < itemTemp.Length; i++)
+                if (itemTemp[index].Contains("--"))
                 {
-                    if (itemTemp[i].Contains("--"))
+                    if (itemTemp[index + 1].Contains("@"))
                     {
-                        if (itemTemp[i+1].Contains("@"))
+                        index = DismantlingData(index, itemTemp, itemDictionary);
+                    }
+                    else if (itemTemp[index + 1].Contains(paramDocKey))
+                    {
+                        index = DismantlingData(index, itemTemp, itemDictionary);
+                    }
+                    else if (!(itemTemp[index + 1] == ""))
+                    {
+                        index = index + 1;
+                        string stringTemp = "";
+                        int j;
+                        for (j = index; j < itemTemp.Length; j++)
                         {
-                            i = i + 1;
-                            string stringTemp = "";
-
-                            for (int j = i + 1; j < itemTemp.Length; j++)
+                            if (itemTemp[j].Contains("--"))
                             {
-                                if (itemTemp[j].Contains("--"))
-                                {
-                                    stringTemp = stringTemp.Trim(' ');
-                                    itemDictionary.Add(itemTemp[i], stringTemp);
-                                    i = j;
-                                    break;
-                                }
-                                else
-                                {
-                                    stringTemp += itemTemp[j] + " ";
-                                }
+                                break;
                             }
-                        }
-                        else if (itemTemp[i + 1].Contains("param"))
-                        {
-                            i = i + 1;
+                            else
+                            {
+                                stringTemp += itemTemp[j] + " ";
+                            }
 
                         }
-                        else
-                        {
-                            i = i + 1;
-                        }
+                        stringTemp = stringTemp.Trim(' ');
+                        itemDictionary.Add(stringTemp, functionDocKey);
+                        index = j - 1;
                     }
                 }
-                string s = "";
-                ///这是一个类
-                if (itemDictionary.TryGetValue(classKey[0], out s))
-                {
-                    AnalyticalClass(itemDictionary);
-                }
-                ///这是一个方法
-                else if (itemDictionary.TryGetValue(functionKey[0], out s))
-                {
-                    AnalyticalFunction(itemDictionary);
-                }
-
             }
+            ///这是一个类
+            if (itemDictionary.ContainsValue(classKey))
+            {
+                AnalyticalClass(itemDictionary);
+            }
+            ///这是一个方法
+            else if (itemDictionary.ContainsValue(functionKey))
+            {
+                AnalyticalFunction(itemDictionary);
+            }
+
         }
         /// <summary>
         /// 解析一个类的注释
@@ -147,22 +161,22 @@ namespace CocosAPIMaker
         {
             foreach (var item in docs)
             {
-                if (item.Key == classKey[0])
+                if (item.Value == classKey)
                 {
-                    _classStruct._Class = item.Value;
+                    _classStruct._Class = item.Key;
                 }
-                else if (item.Key == inheritedClassKey[0])
+                else if (item.Value == inheritedClassKey)
                 {
-                    _classStruct._InheritedClass = item.Value;
+                    _classStruct._InheritedClass = item.Key;
                 }
-                else if (item.Key == parentClassKey[0])
+                else if (item.Value == parentClassKey)
                 {
-                    _classStruct._ParentModule = item.Value;
+                    _classStruct._ParentModule = item.Key;
                 }
             }
         }
         /// <summary>
-        /// 解析一个方法的注释,并把方法信息装箱到传入的_ClassStruct
+        /// 解析一个方法的注释,并把方法信息装箱到_ClassStruct
         /// </summary>
         /// <param name="docs"></param>
         /// <returns></returns>
@@ -171,74 +185,78 @@ namespace CocosAPIMaker
             FunctionStruct fs = new FunctionStruct();
             foreach (var item in docs)
             {
-                ///这是一个方法
-                if (item.Key == functionKey[0])
+                //这是一个方法
+                if (item.Value == functionKey)
                 {
-                    string[] line = item.Value.Split(spaseKey,StringSplitOptions.None);
+                    string[] line = item.Key.Split(spaseKey, StringSplitOptions.None);
                     string functionName = line[1];
-                    string functionClass = line[0].Split(new string[] { "=#" }, StringSplitOptions.None)[1].Replace("]","");
+                    string functionClass = line[0].Split(new string[] { "=#" }, StringSplitOptions.None)[1].Replace("]", "");
                     if (functionClass == _classStruct._Class)
                     {
                         fs._Function = functionName;
                     }
                 }
-                else if (item.Key == functionDocKey[0])
+                else if (item.Value == functionDocKey)
                 {
-                    //fs._Doc = "";
+                    fs._Doc = item.Key;
                 }
-                ///这是一个参数
-                else if (item.Key == paramKey[0])
+                //这是一个参数
+                else if (item.Value == paramKey)
                 {
-                    if (!IsIgnoreKey(item.Value))
+                    if (!IsIgnoreKey(item.Key))
                     {
+                        int index = item.Key.IndexOf(" ");
+                        string paramType = item.Key.Substring(0, index).Trim(' ').Trim('#');
+                        string paramName = item.Key.Substring(index, item.Key.Length - index).Trim(' ');
                         ParamStruct ps;
                         if (fs._Params == null)
                         {
                             fs._Params = new List<ParamStruct>();
                         }
                         if (fs._Params.Exists(x =>
-                        x._Param == item.Value))
+                        x._Param == paramName))
                         {
-                            ps = fs._Params.Find(x => x._Param == item.Value);
+                            ps = fs._Params.Find(x => x._Param == paramName);
+                            fs._Params.Remove(ps);
                         }
                         else
                         {
                             ps = new ParamStruct();
-                            fs._Params.Add(ps);
+                            ps._Param = paramName;
                         }
-                        ps._Type = item.Value;
-                        ps._Param = item.Value;
+                        ps._Type = paramType;
+                        fs._Params.Add(ps);
                     }
                 }
                 //这是一个参数的注释
-                else if (item.Key == paramDocKey[0])
+                else if (item.Value == paramDocKey)
                 {
+                    int index = item.Key.IndexOf(" ");
+                    string paramName = item.Key.Substring(0, index).Trim(' ');
+                    string paramDoc = item.Key.Substring(index, item.Key.Length - index).Trim(' ');
                     ParamStruct ps;
                     if (fs._Params == null)
                     {
                         fs._Params = new List<ParamStruct>();
                     }
                     if (fs._Params.Exists(x =>
-                    x._Param == item.Value))
+                    x._Param == paramName))
                     {
-                        ps = fs._Params.Find(x => x._Param == item.Value);
+                        ps = fs._Params.Find(x => x._Param == paramName);
+                        fs._Params.Remove(ps);
                     }
                     else
                     {
                         ps = new ParamStruct();
-                        ps._Param = item.Value;
-                        fs._Params.Add(ps);
+                        ps._Param = paramName;
                     }
-                    ps._Doc += item.Value;
+                    ps._Doc = paramDoc;
+                    fs._Params.Add(ps);
                 }
                 //这是一个返回值
-                else if (item.Key == returnKey[0])
+                else if (item.Value == returnKey)
                 {
-                    fs._Return._ReturnType = item.Value;
-                }
-                else if (item.Key == returnDocKey[0])
-                {
-
+                    fs._Return._ReturnType = item.Key.Split(new string[] { "#" }, StringSplitOptions.None)[0];
                 }
             }
             if (_classStruct._Functions == null)
