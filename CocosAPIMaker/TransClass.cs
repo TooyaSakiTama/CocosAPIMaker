@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CocosAPIMaker
 {
-    public class Trans
+    public class TransClass
     {
         public struct ClassStruct
         {
@@ -58,8 +58,11 @@ namespace CocosAPIMaker
                 AnalyticalDoc(item);
             }
 
-            Console.WriteLine(_classStruct);
+            TransDoc td = new TransDoc();
+            td.Trans(_classStruct);
+
         }
+
         /// <summary>
         /// 格式化所有的注释条目
         /// </summary>

@@ -28,7 +28,7 @@ namespace CocosAPIMaker
             var path = fbw.SelectedPath.Trim();
             Log.Text = "当前选择路径:" + path + "\n";
             //this.SearchAllFile(path);
-            _ = this.TransAsync("C:/Users/Tooya/source/repos/TooyaSakiTama/CocosAPIMaker/CocosAPIMaker/test/api/AbstractCheckButton.lua");
+            _ = this.TransAsync("C:/Users/Tooya/source/repos/CocosAPIMaker/CocosAPIMaker/test/api/AbstractCheckButton.lua");
         }
         private void SearchAllFile(string path)
         {
@@ -49,7 +49,7 @@ namespace CocosAPIMaker
                 await fileStream.ReadAsync(stream,0,(int)fileStream.Length);
             };
             string luaStr = Encoding.ASCII.GetString(stream);
-            Trans trans = new Trans();
+            TransClass trans = new TransClass();
             trans.TransStrat(luaStr);
             return true;
         }
