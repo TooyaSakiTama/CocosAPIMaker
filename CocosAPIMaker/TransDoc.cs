@@ -17,16 +17,17 @@ namespace CocosAPIMaker
         }
         private string CreateClassDoc(TransClass.ClassStruct _classStruct)
         {
-            string s = "";
             StringBuilder _classDoc = new StringBuilder();
-            _classDoc.Append($"{_classStruct._ParentModule} = {_classStruct._ParentModule} or {{}}");
-            _classDoc.AppendLine($"---@class {_classStruct._Class} : {_classStruct._InheritedClass}");
-            _classDoc.AppendLine($"local {_classStruct._Class} = {{}}");
-            _classDoc.AppendLine($"{_classStruct._ParentModule}.{_classStruct._Class} = {_classStruct._Class}");
-            _classDoc.AppendLine(StringBuilderEx.cursor);
-            _classDoc.Append($"return {_classStruct._Class}");
+            _classDoc.Add($"{_classStruct._ParentModule} = {_classStruct._ParentModule} or {{}}");
+            _classDoc.NewLine($"---@class {_classStruct._Class} : {_classStruct._InheritedClass}");
+            _classDoc.NewLine($"local {_classStruct._Class} = {{}}");
+            _classDoc.NewLine($"{_classStruct._ParentModule}.{_classStruct._Class} = {_classStruct._Class}");
+            _classDoc.NewLine();
+            _classDoc.NewLine($"return {_classStruct._Class}");
             Console.WriteLine(_classDoc.ToString().GetLinesCount());
             Console.WriteLine(_classDoc);
+            _classDoc.Add()
+            Console.WriteLine()
             return _classDoc.ToString();
         }
     }
