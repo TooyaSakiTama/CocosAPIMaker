@@ -1,5 +1,6 @@
 ﻿{
-  "int": "number",
-  "float": "number",
-  "size_table" : ""
+  "int":"number",
+  "float":"number",
+  "double":"number",
+  "bool":"boolean"
 }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CocosAPIMaker
 {
@@ -18,6 +15,7 @@ namespace CocosAPIMaker
                 sb.Add(CreateFunctionDoc(function));
                 sb.MoveCursor(sb.GetLinesCount());
             }
+            Console.WriteLine(sb.GetString());
             return sb.GetString();
         }
         private string CreateFunctionDoc(TransClass.FunctionStruct _functionStruct)
@@ -25,18 +23,28 @@ namespace CocosAPIMaker
             StringBuilder _functionDoc = new StringBuilder();
             if (_functionStruct._Doc != null)
             {
-                _functionDoc.NewLine(_functionStruct._Doc);
+                _functionDoc.NewLine($"---{_functionStruct._Doc}");
             }
+            StringBuilder paramsStr = new StringBuilder(string.Empty);
             if (_functionStruct._Params != null)
             {
                 foreach (var param in _functionStruct._Params)
                 {
                     _functionDoc.NewLine(CreateParamDoc(param));
+                    
+                    if (string.IsNullOrEmpty(paramsStr.ToString()))
+                    {
+                        paramsStr.Append(param._Param);
+                    }
+                    else
+                    {
+                        paramsStr.Append(",").Append(param._Param);
+                    }
                 }
 
             }
             _functionDoc.NewLine(CreateReturnDoc(_functionStruct._Return));
-            _functionDoc.NewLine($"function {className}:{_functionStruct._Function} end");
+            _functionDoc.NewLine($"function {className}:{_functionStruct._Function}({paramsStr}) end");
             _functionDoc.NewLine();
             return _functionDoc.GetString();
         }
