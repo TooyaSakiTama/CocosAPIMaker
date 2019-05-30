@@ -49,7 +49,7 @@ namespace CocosAPIMaker
         /// 开始遍历所有的注释条目
         /// </summary>
         /// <param name="luaStr"></param>
-        public void TransStrat(string luaStr)
+        public ClassStruct Start(string luaStr)
         {
             string[] docs = SplitAllDoc(luaStr);
             _classStruct = new ClassStruct();
@@ -57,9 +57,8 @@ namespace CocosAPIMaker
             {
                 AnalyticalDoc(item);
             }
-
-            TransDoc td = new TransDoc();
-            td.Trans(_classStruct);
+            
+            return _classStruct;
 
         }
 
@@ -96,7 +95,16 @@ namespace CocosAPIMaker
                 }
             }
             stringTemp = stringTemp.Trim(' ');
-            itemDictionary.Add(stringTemp, data[index]);
+            try
+            {
+                itemDictionary.Add(stringTemp, data[index]);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
+            
             index = j - 1;
             return index;
         }
@@ -154,7 +162,7 @@ namespace CocosAPIMaker
             {
                 AnalyticalFunction(itemDictionary);
             }
-
+            itemDictionary.Clear();
         }
         /// <summary>
         /// 解析一个类的注释
@@ -235,6 +243,10 @@ namespace CocosAPIMaker
                 else if (item.Value == paramDocKey)
                 {
                     int index = item.Key.IndexOf(" ");
+                    if (index == -1)
+                    {
+                        index = item.Key.Length;
+                    }
                     string paramName = item.Key.Substring(0, index).Trim(' ');
                     string paramDoc = item.Key.Substring(index, item.Key.Length - index).Trim(' ');
                     ParamStruct ps;

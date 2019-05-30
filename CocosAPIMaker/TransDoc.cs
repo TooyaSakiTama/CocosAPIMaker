@@ -6,16 +6,15 @@ namespace CocosAPIMaker
     class TransDoc
     {
         private string className = string.Empty;
-        public string Trans(TransClass.ClassStruct _classStruct)
+        public string Start(TransClass.ClassStruct _classStruct)
         {
             className = _classStruct._Class;
             StringBuilder sb = new StringBuilder(CreateClassDoc(_classStruct));
             foreach (var function in _classStruct._Functions)
             {
                 sb.Add(CreateFunctionDoc(function));
-                sb.MoveCursor(sb.GetLinesCount());
+                sb.MoveCursor(sb.GetLinesCount() - 1);
             }
-            Console.WriteLine(sb.GetString());
             return sb.GetString();
         }
         private string CreateFunctionDoc(TransClass.FunctionStruct _functionStruct)

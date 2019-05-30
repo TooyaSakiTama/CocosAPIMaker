@@ -8,8 +8,9 @@
         Title="MainWindow" 
         Height="450" Width="500" ResizeMode="NoResize">
     <Grid>
-        <Button Name="SelectDirectory" Content="选择目录" Width="100" Click="SelectDirectory_Click" Margin="67,17,225,370"/>
-        <Button Name="Start" Content="开始转换" Width="100" Click="Start_Click" Margin="231,17,61,370"/>
+        <Button Name="SelectInputDirectory" Content="选择输入目录" Width="100" Click="SelectInputDirectory_Click" Margin="30,17,364,370"/>
+        <Button Name="SelectOutPutDirectory" Content="选择输出目录" Width="100" Click="SelectOutPutDirectory_Click" Margin="197,17,197,370"/>
+        <Button Name="Start" Content="开始转换" Width="100" Click="Start_Click" Margin="364,17,30,370"/>
         <ScrollViewer Name="LogScrollView" Margin="10,67,10,10">
             <TextBlock Name="Log" Text=""/>
         </ScrollViewer>
