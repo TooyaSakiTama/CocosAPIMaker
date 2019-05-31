@@ -14,7 +14,6 @@ namespace System
             line = s.Split(Environment.NewLine).Length;
             return line;
         }
-
         public static string[] Split(this string s,string septator)
         {
             return s.Split(new string[] { septator },StringSplitOptions.None);
@@ -214,17 +213,17 @@ namespace System
             }
             return line;
         }
-        private static int FindLineIndex(this StringBuilder sb, int line)
+        public static int FindIndex(this StringBuilder sb,int keyOrder,string key)
         {
             int index = 0;
             int count = 0;
             CharEnumerator sce = sb.ToString().GetEnumerator();
             while (sce.MoveNext())
             {
-                if (sce.Current.ToString() == "\r")
+                if (sce.Current.ToString() == key)
                 {
                     count++;
-                    if (count == line)
+                    if (count == keyOrder)
                     {
                         break;
                     }
@@ -232,6 +231,10 @@ namespace System
                 index++;
             }
             return index;
+        }
+        public static int FindLineIndex(this StringBuilder sb, int line)
+        {
+            return sb.FindIndex(line, "\r");
         }
     }
 }

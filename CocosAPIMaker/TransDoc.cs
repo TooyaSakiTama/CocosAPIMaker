@@ -10,10 +10,14 @@ namespace CocosAPIMaker
         {
             className = _classStruct._Class;
             StringBuilder sb = new StringBuilder(CreateClassDoc(_classStruct));
-            foreach (var function in _classStruct._Functions)
+            if (_classStruct._Functions != null)
             {
-                sb.Add(CreateFunctionDoc(function));
-                sb.MoveCursor(sb.GetLinesCount() - 1);
+                foreach (var function in _classStruct._Functions)
+                {
+
+                    sb.Add(CreateFunctionDoc(function));
+                    sb.MoveCursor(sb.GetLinesCount() - 1);
+                }
             }
             return sb.GetString();
         }
@@ -30,7 +34,7 @@ namespace CocosAPIMaker
                 foreach (var param in _functionStruct._Params)
                 {
                     _functionDoc.NewLine(CreateParamDoc(param));
-                    
+
                     if (string.IsNullOrEmpty(paramsStr.ToString()))
                     {
                         paramsStr.Append(param._Param);

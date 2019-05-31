@@ -59,36 +59,24 @@ namespace CocosAPIMaker
                 MessageBox.Show("请选择输出目录");
                 return;
             }
-            List<Task> taskList = new List<Task>();
             foreach (var item in files)
             {
-                //Action action = new Action(async () =>
-                //{
+                string fileName = Path.GetFileNameWithoutExtension(item.Name);
+                if (!fileName.Contains("auto_api"))
+                {
 
-                //});
-                //Task task = new Task(action);
-                //taskList.Add(task);
-                string emmyLuaDoc = await TransAsync(item.FullName);
-                await new WriteToFile().StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc);
+                    string emmyLuaDoc = await TransAsync(item.FullName);
+                    if (files.IndexOf(item) == (files.Count - 1))
+                    {
+                        await new WriteToFile().StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc,true);
+                    }
+                    else
+                    {
+                        await new WriteToFile().StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc);
+                    }
+                    
+                }
             }
-            await Task.Run(() =>
-             {
-                 int index = 0;
-                 Task task = taskList[index];
-                 while (true)
-                 {
-                     if (index == 0 && task.Status == TaskStatus.Created)
-                     {
-                         task.Start();
-                     }
-                     else if (task.Status == TaskStatus.RanToCompletion)
-                     {
-                         index++;
-                         task = taskList[index];
-                         task.Start();
-                     }
-                 }
-             });
         }
         private void SearchAllFile()
         {
@@ -103,6 +91,7 @@ namespace CocosAPIMaker
         }
         private async Task<string> TransAsync(string filePath)
         {
+
             byte[] stream;
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
             {

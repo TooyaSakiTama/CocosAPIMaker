@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace CocosAPIMaker
 {
@@ -36,14 +38,15 @@ namespace CocosAPIMaker
         public static string inheritedClassKey = "@extend";
         public static string parentClassKey = "@parent_module";
         public static string functionKey = "@function";
-        public static string functionDocKey = "functionDoc";
         public static string paramKey = "@param";
-        public static string paramDocKey = "param";
         public static string returnKey = "@return";
+        public static string functionDocKey = "functionDoc";
+        public static string paramDocKey = "param";
         public static string returnDocKey = "return";
         public static string[] enterKey = { "\n" };
         public static string[] spaseKey = { " " };
         public static string[] ignoreKeys = { "self" };
+
         public static ClassStruct _classStruct;
         /// <summary>
         /// 开始遍历所有的注释条目
@@ -51,17 +54,39 @@ namespace CocosAPIMaker
         /// <param name="luaStr"></param>
         public ClassStruct Start(string luaStr)
         {
+            luaStr = new StringBuilder(luaStr).Remove("return nil").GetString();
             string[] docs = SplitAllDoc(luaStr);
             _classStruct = new ClassStruct();
             foreach (var item in docs)
             {
                 AnalyticalDoc(item);
             }
-            
             return _classStruct;
-
         }
-
+        //private void GetAllType(string[] docs)
+        //{
+        //    List<string> keys = new List<string>();
+        //    foreach (var item in docs)
+        //    {
+        //        string[] all = item.Split(new string[] { "-- @" }, StringSplitOptions.RemoveEmptyEntries);
+        //        foreach (var item1 in all)
+        //        {
+        //            if (item1.Contains("-- @"))
+        //            {
+        //                int endIndex = new StringBuilder(item1).FindIndex(1, " ");
+        //                string key = item1.Substring(0, endIndex);
+        //                if (!keys.Contains(key))
+        //                {
+        //                    keys.Add(key);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    foreach (var item in keys)
+        //    {
+        //        Console.WriteLine(item);
+        //    }
+        //}
         /// <summary>
         /// 格式化所有的注释条目
         /// </summary>
@@ -78,7 +103,7 @@ namespace CocosAPIMaker
 
             return temp;
         }
-        private int DismantlingData(int index, string[] data, Dictionary<string, string> itemDictionary)
+        private int DismantlingData(int index, string[] data, List<Dictionary<string,string>> itemList)
         {
             index = index + 1;
             string stringTemp = "";
@@ -97,7 +122,9 @@ namespace CocosAPIMaker
             stringTemp = stringTemp.Trim(' ');
             try
             {
-                itemDictionary.Add(stringTemp, data[index]);
+                Dictionary<string, string> tempDic = new Dictionary<string, string>();
+                tempDic.Add(stringTemp, data[index]);
+                itemList.Add(tempDic);
             }
             catch (Exception e)
             {
@@ -115,19 +142,19 @@ namespace CocosAPIMaker
         /// <param name="doc"></param>
         public void AnalyticalDoc(string item)
         {
-            string[] itemTemp = item.Split(spaseKey, StringSplitOptions.None);
-            Dictionary<string, string> itemDictionary = new Dictionary<string, string>();
+            string[] itemTemp = item.Split(spaseKey, StringSplitOptions.RemoveEmptyEntries);
+            List<Dictionary<string, string>> itemList = new List<Dictionary<string, string>>();
             for (int index = 0; index < itemTemp.Length; index++)
             {
                 if (itemTemp[index].Contains("--"))
                 {
                     if (itemTemp[index + 1].Contains("@"))
                     {
-                        index = DismantlingData(index, itemTemp, itemDictionary);
+                        index = DismantlingData(index, itemTemp, itemList);
                     }
                     else if (itemTemp[index + 1].Contains(paramDocKey))
                     {
-                        index = DismantlingData(index, itemTemp, itemDictionary);
+                        index = DismantlingData(index, itemTemp, itemList);
                     }
                     else if (!(itemTemp[index + 1] == ""))
                     {
@@ -147,42 +174,59 @@ namespace CocosAPIMaker
 
                         }
                         stringTemp = stringTemp.Trim(' ');
-                        itemDictionary.Add(stringTemp, functionDocKey);
+                        Dictionary<string,string> tempDic = new Dictionary<string, string>();
+                        tempDic.Add(stringTemp, functionDocKey);
+                        itemList.Add(tempDic);
                         index = j - 1;
                     }
                 }
             }
-            ///这是一个类
-            if (itemDictionary.ContainsValue(classKey))
+            if (itemList.Count > 0)
             {
-                AnalyticalClass(itemDictionary);
+                // 这是一个类
+                if (ListDicContainsValue(itemList, classKey))
+                {
+                    AnalyticalClass(itemList);
+                }
+                // 这是一个方法
+                else if (ListDicContainsValue(itemList, functionKey))
+                {
+                    AnalyticalFunction(itemList);
+                }
             }
-            ///这是一个方法
-            else if (itemDictionary.ContainsValue(functionKey))
+            itemList.Clear();
+        }
+        bool ListDicContainsValue(List<Dictionary<string,string>> itemList,string value)
+        {
+            foreach (var item in itemList)
             {
-                AnalyticalFunction(itemDictionary);
+                if (item.ContainsValue(value))
+                {
+                    return true;
+                }
             }
-            itemDictionary.Clear();
+            return false;
         }
         /// <summary>
         /// 解析一个类的注释
         /// </summary>
         /// <param name="docs"></param>
-        void AnalyticalClass(Dictionary<string, string> docs)
+        void AnalyticalClass(List<Dictionary<string,string>> docs)
         {
             foreach (var item in docs)
             {
-                if (item.Value == classKey)
+                
+                if (item.ContainsValue(classKey))
                 {
-                    _classStruct._Class = item.Key;
+                    _classStruct._Class = item.Keys.First();
                 }
-                else if (item.Value == inheritedClassKey)
+                else if (item.ContainsValue(inheritedClassKey))
                 {
-                    _classStruct._InheritedClass = item.Key;
+                    _classStruct._InheritedClass = item.Keys.First();
                 }
-                else if (item.Value == parentClassKey)
+                else if (item.ContainsValue(parentClassKey))
                 {
-                    _classStruct._ParentModule = item.Key;
+                    _classStruct._ParentModule = item.Keys.First();
                 }
             }
         }
@@ -191,15 +235,15 @@ namespace CocosAPIMaker
         /// </summary>
         /// <param name="docs"></param>
         /// <returns></returns>
-        void AnalyticalFunction(Dictionary<string, string> docs)
+        void AnalyticalFunction(List<Dictionary<string, string>> docs)
         {
             FunctionStruct fs = new FunctionStruct();
             foreach (var item in docs)
             {
                 //这是一个方法
-                if (item.Value == functionKey)
+                if (item.ContainsValue(functionKey))
                 {
-                    string[] line = item.Key.Split(spaseKey, StringSplitOptions.None);
+                    string[] line = item.Keys.First().Split(spaseKey, StringSplitOptions.None);
                     string functionName = line[1];
                     string functionClass = line[0].Split(new string[] { "=#" }, StringSplitOptions.None)[1].Replace("]", "");
                     if (functionClass == _classStruct._Class)
@@ -207,18 +251,30 @@ namespace CocosAPIMaker
                         fs._Function = functionName;
                     }
                 }
-                else if (item.Value == functionDocKey)
+                else if (item.ContainsValue(functionDocKey))
                 {
-                    fs._Doc = item.Key;
+                    fs._Doc += item.Keys.First();
                 }
                 //这是一个参数
-                else if (item.Value == paramKey)
+                else if (item.ContainsValue(paramKey))
                 {
-                    if (!IsIgnoreKey(item.Key))
+                    string key = item.Keys.First();
+                    if (!IsIgnoreKey(key))
                     {
-                        int index = item.Key.IndexOf(" ");
-                        string paramType = item.Key.Substring(0, index).Trim(' ').Trim('#');
-                        string paramName = item.Key.Substring(index, item.Key.Length - index).Trim(' ');
+                        int index = key.IndexOf(" ");
+                        if (index == -1)
+                        {
+                            index = key.Length;
+                        }
+                        string[] keyData = key.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < keyData.Length - 1; i++)
+                        {
+                            sb.Add(keyData[i]).Add(" ");
+                        }
+                        
+                        string paramType = sb.GetString().Trim(' ').Trim('#');
+                        string paramName = keyData[keyData.Length - 1].Trim(' ').Trim('#'); //key.Substring(index, key.Length - index).Trim(' ');
                         ParamStruct ps;
                         if (fs._Params == null)
                         {
@@ -240,15 +296,16 @@ namespace CocosAPIMaker
                     }
                 }
                 //这是一个参数的注释
-                else if (item.Value == paramDocKey)
+                else if (item.ContainsValue(paramDocKey))
                 {
-                    int index = item.Key.IndexOf(" ");
+                    string key = item.Keys.First();
+                    int index = key.IndexOf(" ");
                     if (index == -1)
                     {
-                        index = item.Key.Length;
+                        index = key.Length;
                     }
-                    string paramName = item.Key.Substring(0, index).Trim(' ');
-                    string paramDoc = item.Key.Substring(index, item.Key.Length - index).Trim(' ');
+                    string paramName = key.Substring(0, index).Trim(' ');
+                    string paramDoc = key.Substring(index, key.Length - index).Trim(' ');
                     ParamStruct ps;
                     if (fs._Params == null)
                     {
@@ -269,9 +326,9 @@ namespace CocosAPIMaker
                     fs._Params.Add(ps);
                 }
                 //这是一个返回值
-                else if (item.Value == returnKey)
+                else if (item.ContainsValue(returnKey))
                 {
-                    fs._Return._ReturnType = item.Key.Split(new string[] { "#" }, StringSplitOptions.None)[0];
+                    fs._Return._ReturnType = item.Keys.First().Split(new string[] { "#" }, StringSplitOptions.None)[0];
                 }
             }
             if (_classStruct._Functions == null)
