@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -22,6 +23,8 @@ namespace CocosAPIMaker
         private List<FileInfo> files = new List<FileInfo>();
         private string inputDir = string.Empty;
         private string outputDir = string.Empty;
+        private readonly TaskScheduler _syncContextTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+        public static bool transing = false;
         private void SelectInputDirectory_Click(object sender, RoutedEventArgs e)
         {
             var fbw = new FolderBrowserDialog();
@@ -31,10 +34,25 @@ namespace CocosAPIMaker
                 return;
             }
             var path = fbw.SelectedPath.Trim();
-            Log.Text = "当前选择路径:" + path + "\n";
+            SetLogAsync("当前选择输入路径:" + path + "\n");
             inputDir = path;
             SearchAllFile();
         }
+        public void SetLog(string log)
+        {
+            Task.Factory.StartNew(() => {
+                Log.Text += log;
+                LogScrollView.ScrollToBottom();
+            }, new CancellationTokenSource().Token, TaskCreationOptions.None, _syncContextTaskScheduler).Wait();
+        }
+        private void SetLogAsync(string log)
+        {
+            Task.Factory.StartNew(() => {
+                Log.Text += log;
+                LogScrollView.ScrollToBottom();
+            }, new CancellationTokenSource().Token, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext()).Wait();
+        }
+
         private void SelectOutPutDirectory_Click(object sender, RoutedEventArgs e)
         {
             var fbw = new FolderBrowserDialog();
@@ -44,7 +62,7 @@ namespace CocosAPIMaker
                 return;
             }
             var path = fbw.SelectedPath.Trim();
-            Log.Text = "当前选择路径:" + path + "\n";
+            SetLogAsync("当前选择输出路径:" + path + "\n");
             outputDir = path;
         }
         private async void Start_Click(object sender, RoutedEventArgs e)
@@ -59,6 +77,12 @@ namespace CocosAPIMaker
                 MessageBox.Show("请选择输出目录");
                 return;
             }
+            if (transing)
+            {
+                MessageBox.Show("转换已经开始");
+                return;
+            }
+            transing = true;
             foreach (var item in files)
             {
                 string fileName = Path.GetFileNameWithoutExtension(item.Name);
@@ -66,15 +90,17 @@ namespace CocosAPIMaker
                 {
 
                     string emmyLuaDoc = await TransAsync(item.FullName);
+                    WriteToFile wtf = new WriteToFile();
+                    wtf.log = SetLog;
                     if (files.IndexOf(item) == (files.Count - 1))
                     {
-                        await new WriteToFile().StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc,true);
+                        await wtf.StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc, true);
                     }
                     else
                     {
-                        await new WriteToFile().StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc);
+                        await wtf.StartAsync(outputDir, Path.GetFileNameWithoutExtension(item.Name), emmyLuaDoc);
                     }
-                    
+
                 }
             }
         }
@@ -82,9 +108,10 @@ namespace CocosAPIMaker
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(inputDir);
             FileInfo[] fileInfos = directoryInfo.GetFiles();
+            SetLogAsync("当前扫描到的文件");
             foreach (var item in fileInfos)
             {
-                Log.Text += item.FullName + "\n";
+                SetLogAsync(item.FullName + "\n");
                 files.Add(item);
                 Console.WriteLine(item.FullName);
             }
