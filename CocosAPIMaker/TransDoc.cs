@@ -21,6 +21,11 @@ namespace CocosAPIMaker
             }
             return sb.GetString();
         }
+        /// <summary>
+        /// 创建一个方法注解
+        /// </summary>
+        /// <param name="_functionStruct">方法结构体</param>
+        /// <returns></returns>
         private string CreateFunctionDoc(TransClass.FunctionStruct _functionStruct)
         {
             StringBuilder _functionDoc = new StringBuilder();
@@ -51,18 +56,33 @@ namespace CocosAPIMaker
             _functionDoc.NewLine();
             return _functionDoc.GetString();
         }
+        /// <summary>
+        /// 创建一个参数注解
+        /// </summary>
+        /// <param name="_paramStruct">参数结构体</param>
+        /// <returns></returns>
         private string CreateParamDoc(TransClass.ParamStruct _paramStruct)
         {
             StringBuilder _paramDoc = new StringBuilder();
             _paramDoc.Add($"---@param {_paramStruct._Param} {_paramStruct._Type} {_paramStruct._Doc}");
             return _paramDoc.GetString();
         }
+        /// <summary>
+        /// 创建一个返回值注解
+        /// </summary>
+        /// <param name="_returnStruct">返回值结构体</param>
+        /// <returns></returns>
         private string CreateReturnDoc(TransClass.ReturnStruct _returnStruct)
         {
             StringBuilder _returnDoc = new StringBuilder();
             _returnDoc.Add($"---@return {_returnStruct._ReturnType} {_returnStruct._ReturnDoc}");
             return _returnDoc.GetString();
         }
+        /// <summary>
+        /// 创建一个类的注解
+        /// </summary>
+        /// <param name="_classStruct">类结构体</param>
+        /// <returns></returns>
         private string CreateClassDoc(TransClass.ClassStruct _classStruct)
         {
             StringBuilder _classDoc = new StringBuilder();

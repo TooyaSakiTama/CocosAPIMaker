@@ -7,6 +7,9 @@ namespace CocosAPIMaker
 {
     public class TransClass
     {
+        /// <summary>
+        /// 类结构体
+        /// </summary>
         public struct ClassStruct
         {
             public string _Class;
@@ -14,6 +17,9 @@ namespace CocosAPIMaker
             public string _InheritedClass;
             public List<FunctionStruct> _Functions;
         }
+        /// <summary>
+        /// 方法结构体
+        /// </summary>
         public struct FunctionStruct
         {
             public string _Function;
@@ -21,11 +27,17 @@ namespace CocosAPIMaker
             public List<ParamStruct> _Params;
             public ReturnStruct _Return;
         }
+        /// <summary>
+        /// 返回值结构体
+        /// </summary>
         public struct ReturnStruct
         {
             public string _ReturnType;
             public string _ReturnDoc;
         }
+        /// <summary>
+        /// 参数结构体
+        /// </summary>
         public struct ParamStruct
         {
             public string _Param;
@@ -63,30 +75,6 @@ namespace CocosAPIMaker
             }
             return _classStruct;
         }
-        //private void GetAllType(string[] docs)
-        //{
-        //    List<string> keys = new List<string>();
-        //    foreach (var item in docs)
-        //    {
-        //        string[] all = item.Split(new string[] { "-- @" }, StringSplitOptions.RemoveEmptyEntries);
-        //        foreach (var item1 in all)
-        //        {
-        //            if (item1.Contains("-- @"))
-        //            {
-        //                int endIndex = new StringBuilder(item1).FindIndex(1, " ");
-        //                string key = item1.Substring(0, endIndex);
-        //                if (!keys.Contains(key))
-        //                {
-        //                    keys.Add(key);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    foreach (var item in keys)
-        //    {
-        //        Console.WriteLine(item);
-        //    }
-        //}
         /// <summary>
         /// 格式化所有的注释条目
         /// </summary>
@@ -103,7 +91,14 @@ namespace CocosAPIMaker
 
             return temp;
         }
-        private int DismantlingData(int index, string[] data, List<Dictionary<string,string>> itemList)
+        /// <summary>
+        /// 解析数据并把数据添加到List中
+        /// </summary>
+        /// <param name="index">位置下标</param>
+        /// <param name="data"></param>
+        /// <param name="itemList"></param>
+        /// <returns></returns>
+        private int DismantlingData(int index, string[] data, List<Dictionary<string, string>> itemList)
         {
             index = index + 1;
             string stringTemp = "";
@@ -130,8 +125,6 @@ namespace CocosAPIMaker
             {
                 Console.WriteLine(e);
             }
-            
-            
             index = j - 1;
             return index;
         }
@@ -174,7 +167,7 @@ namespace CocosAPIMaker
 
                         }
                         stringTemp = stringTemp.Trim(' ');
-                        Dictionary<string,string> tempDic = new Dictionary<string, string>();
+                        Dictionary<string, string> tempDic = new Dictionary<string, string>();
                         tempDic.Add(stringTemp, functionDocKey);
                         itemList.Add(tempDic);
                         index = j - 1;
@@ -196,7 +189,7 @@ namespace CocosAPIMaker
             }
             itemList.Clear();
         }
-        bool ListDicContainsValue(List<Dictionary<string,string>> itemList,string value)
+        bool ListDicContainsValue(List<Dictionary<string, string>> itemList, string value)
         {
             foreach (var item in itemList)
             {
@@ -211,11 +204,11 @@ namespace CocosAPIMaker
         /// 解析一个类的注释
         /// </summary>
         /// <param name="docs"></param>
-        void AnalyticalClass(List<Dictionary<string,string>> docs)
+        void AnalyticalClass(List<Dictionary<string, string>> docs)
         {
             foreach (var item in docs)
             {
-                
+
                 if (item.ContainsValue(classKey))
                 {
                     _classStruct._Class = item.Keys.First();
@@ -272,7 +265,7 @@ namespace CocosAPIMaker
                         {
                             sb.Add(keyData[i]).Add(" ");
                         }
-                        
+
                         string paramType = sb.GetString().Trim(' ').Trim('#');
                         string paramName = keyData[keyData.Length - 1].Trim(' ').Trim('#'); //key.Substring(index, key.Length - index).Trim(' ');
                         ParamStruct ps;
@@ -337,6 +330,11 @@ namespace CocosAPIMaker
             }
             _classStruct._Functions.Add(fs);
         }
+        /// <summary>
+        /// 需要忽略的key值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         bool IsIgnoreKey(string key)
         {
             foreach (var item in ignoreKeys)
