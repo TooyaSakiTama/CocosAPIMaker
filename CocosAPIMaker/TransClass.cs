@@ -52,6 +52,7 @@ namespace CocosAPIMaker
         public static string functionKey = "@function";
         public static string paramKey = "@param";
         public static string returnKey = "@return";
+        public static string overloadKey = "@overload";
         public static string functionDocKey = "functionDoc";
         public static string paramDocKey = "param";
         public static string returnDocKey = "return";

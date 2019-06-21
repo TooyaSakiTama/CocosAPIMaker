@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,6 +131,11 @@ namespace CocosAPIMaker
             ClassStruct cs = new TransClass().Start(luaStr);
             string emmyLuaDoc = new TransDoc().Start(cs);
             return emmyLuaDoc;
+        }
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Assembly asm = Assembly.LoadFrom("C:/Users/Tooya/OneDrive/Project/NewYearPig/libcocos2d.dll");
+            Console.WriteLine();
         }
     }
 }

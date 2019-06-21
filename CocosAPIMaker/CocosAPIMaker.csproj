@@ -91,6 +91,7 @@
     <Compile Include="EX\StringExtension.cs" />
     <Compile Include="TransClass.cs" />
     <Compile Include="TransDoc.cs" />
+    <Compile Include="Win32Native.cs" />
     <Compile Include="WriteToFile.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
